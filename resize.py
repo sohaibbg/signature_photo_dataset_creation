@@ -1,35 +1,16 @@
 import os
 import utils
 from PIL import Image
+import cv2
 
 
-def resize_img(path, filename, new_height=300):
-    # Load the image
-    image = Image.open(f'{path}/{filename}')
+def perform(img, new_height):
+    img = utils.correct_img_type(img, 'cv2')
+    # Calculate the corresponding width based on the aspect ratio
+    height, width, _ = img.shape
+    aspect_ratio = width / height
+    desired_width = int(new_height * aspect_ratio)
 
-    # Calculate the new width while maintaining the aspect ratio
-    original_width, original_height = image.size
-    aspect_ratio = original_width / original_height
-    new_width = int(new_height * aspect_ratio)
-
-    # Resize the image with the new width and height
-    resized_image = image.resize((new_width, new_height))
-    # Save the resized image
-    output_path = f"{path}/../resized/{filename}"
-    resized_image.save(output_path)
-
-
-def resize_all_in_dir(folder_name):
-    # make output folder if not exists
-    os.makedirs(f"{folder_name}/../resized", exist_ok=True)
-    # get filenames
-    filenames = [file for file in os.listdir(
-        folder_name) if utils.is_image_file(file)]
-    n = len(filenames)
-    heights = utils.st_dist(n, min=200, max=500, dec=0)
-    for i, filename in enumerate(filenames):
-        resize_img(
-            folder_name,
-            filename,
-            new_height=int(heights[i])
-        )
+    # Resize the image using cv2.resize()
+    resized_img = cv2.resize(img, (desired_width, new_height))
+    return resized_img
